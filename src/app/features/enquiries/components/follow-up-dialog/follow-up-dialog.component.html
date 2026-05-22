@@ -1,0 +1,40 @@
+<p-dialog [(visible)]="visible" [modal]="true" [draggable]="false" [resizable]="false" styleClass="follow-up-dialog"
+    [style]="{ width: '42rem' }" (onHide)="close()">
+    <ng-template pTemplate="header">
+        <div class="dialog-title">
+            <span><i class="pi pi-comments"></i></span>
+            <div>
+                <h2>Add Follow-Up</h2>
+                <p>Capture the conversation outcome and schedule the next touchpoint.</p>
+            </div>
+        </div>
+    </ng-template>
+
+    <div class="dialog-body">
+        <div class="field full">
+            <label for="follow-note">Follow-up Notes</label>
+            <textarea id="follow-note" pInputTextarea rows="5" [(ngModel)]="note"
+                placeholder="Enter follow-up details"></textarea>
+        </div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label for="follow-outcome">Outcome</label>
+                <input id="follow-outcome" pInputText [(ngModel)]="outcome" placeholder="Interested / Not reachable" />
+            </div>
+
+            <div class="field">
+                <label>Next Follow-up Date</label>
+                <p-datepicker [(ngModel)]="nextFollowUpAt" [showIcon]="true" [showTime]="true"
+                    placeholder="Select date & time" appendTo="body"></p-datepicker>
+            </div>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="dialog-footer">
+            <p-button label="Cancel" severity="secondary" [outlined]="true" (onClick)="close()"></p-button>
+            <p-button label="Save Follow-Up" icon="pi pi-check" (onClick)="submit()"></p-button>
+        </div>
+    </ng-template>
+</p-dialog>

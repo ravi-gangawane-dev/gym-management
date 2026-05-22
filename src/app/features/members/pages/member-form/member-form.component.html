@@ -1,0 +1,239 @@
+<div class="member-form-page">
+  <div class="member-panel">
+    <div class="form-heading">
+      <h2>{{ mode === 'edit' ? 'Edit Member' : 'Add New Member' }}</h2>
+      <p>{{ mode === 'edit' ? 'Update member details' : 'Personal & Plan Details' }}</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="member-form">
+      <div class="form-sections">
+        <section class="form-section">
+          <div class="section-label">
+            <i class="pi pi-user"></i>
+            <span>Personal Details</span>
+          </div>
+
+          <div class="section-grid">
+            <div class="form-field">
+              <label>First Name</label>
+              <div class="input-shell">
+                <i class="pi pi-user"></i>
+                <input pInputText formControlName="firstName" placeholder="John" />
+              </div>
+              <small class="field-error" *ngIf="form.controls.firstName.touched && form.controls.firstName.invalid">
+                First Name is required.
+              </small>
+            </div>
+
+            <div class="form-field">
+              <label>Last Name</label>
+              <div class="input-shell">
+                <i class="pi pi-user"></i>
+                <input pInputText formControlName="lastName" placeholder="Doe" />
+              </div>
+              <small class="field-error" *ngIf="form.controls.lastName.touched && form.controls.lastName.invalid">
+                Last Name is required.
+              </small>
+            </div>
+
+            <div class="form-field">
+              <label>Designation</label>
+              <div class="input-shell">
+                <i class="pi pi-briefcase"></i>
+                <input pInputText formControlName="designation" placeholder="Designation (Optional)" />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label>Date of Birth</label>
+              <div class="input-shell date-shell">
+                <i class="pi pi-calendar"></i>
+                <p-datepicker formControlName="dob" dateFormat="dd-mm-yy" placeholder="Select Date"
+                  [showIcon]="false"></p-datepicker>
+              </div>
+              <small class="field-error" *ngIf="form.controls.dob.touched && form.controls.dob.invalid">
+                Date of Birth is required.
+              </small>
+            </div>
+
+            <div class="form-field gender-field">
+              <label>Gender</label>
+              <div class="gender-row">
+                <label class="gender-choice">
+                  <p-radioButton name="gender" value="Male" formControlName="gender"></p-radioButton>
+                  <span>Male</span>
+                </label>
+                <label class="gender-choice">
+                  <p-radioButton name="gender" value="Female" formControlName="gender"></p-radioButton>
+                  <span>Female</span>
+                </label>
+                <label class="gender-choice">
+                  <p-radioButton name="gender" value="Other" formControlName="gender"></p-radioButton>
+                  <span>Other</span>
+                </label>
+              </div>
+              <small class="field-error" *ngIf="form.controls.gender.touched && form.controls.gender.invalid">
+                Gender is required.
+              </small>
+            </div>
+
+            <div class="photo-upload">
+              <div class="photo-circle">
+                <img *ngIf="photoPreviewUrl" [src]="photoPreviewUrl" alt="Photo" />
+                <i *ngIf="!photoPreviewUrl" class="pi pi-camera"></i>
+              </div>
+              <div class="upload-copy">
+                <label class="upload-label" (click)="photoInput.click()">Upload Photo</label>
+                <span>JPG or PNG</span>
+                <input #photoInput type="file" (change)="onFileSelected($event, 'photo')" accept="image/*" />
+                <small class="field-note" *ngIf="photoFileName">{{ photoFileName }}</small>
+              </div>
+            </div>
+
+            <div class="id-upload-field">
+              <label>Government ID</label>
+              <div class="id-upload" (click)="idInput.click()">
+                <div class="id-preview" *ngIf="idPreviewUrl && idIsImage">
+                  <img [src]="idPreviewUrl" alt="ID" />
+                </div>
+                <div class="id-icon" *ngIf="!idPreviewUrl || !idIsImage">
+                  <i class="pi pi-id-card"></i>
+                </div>
+                <div class="id-upload-copy">
+                  <span>Upload Government ID</span>
+                  <small>PDF, JPG, or PNG</small>
+                  <small class="field-note" *ngIf="idFileName">{{ idFileName }}</small>
+                </div>
+                <input #idInput type="file" (change)="onFileSelected($event, 'govId')" accept=".pdf,.jpg,.jpeg,.png" />
+              </div>
+            </div>
+
+            <div class="notes-field">
+              <label>Notes</label>
+              <div class="notes-card">
+                <p-editor formControlName="notes" [style]="{ height: '54px' }"></p-editor>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-label">
+            <i class="pi pi-phone"></i>
+            <span>Contact Details</span>
+          </div>
+
+          <div class="section-grid">
+            <div class="form-field">
+              <label>Phone</label>
+              <div class="input-shell">
+                <i class="pi pi-phone"></i>
+                <input pInputText formControlName="phone" placeholder="(999) 999-9999" />
+              </div>
+              <small class="field-error" *ngIf="form.controls.phone.touched && form.controls.phone.invalid">
+                Phone is required.
+              </small>
+            </div>
+
+            <div class="form-field">
+              <label>Email</label>
+              <div class="input-shell">
+                <i class="pi pi-envelope"></i>
+                <input pInputText formControlName="email" placeholder="member@example.com" />
+              </div>
+            </div>
+
+            <div class="emergency-field">
+              <label>Emergency Contact</label>
+              <div class="input-shell">
+                <i class="pi pi-phone"></i>
+                <input pInputText formControlName="emergencyContact" placeholder="Emergency Contact" />
+              </div>
+              <small class="field-error"
+                *ngIf="form.controls.emergencyContact.touched && form.controls.emergencyContact.invalid">
+                Emergency Contact is required.
+              </small>
+            </div>
+
+            <div class="address-field">
+              <label>Address</label>
+              <div class="input-shell textarea-shell">
+                <i class="pi pi-map-pin"></i>
+                <textarea pTextarea formControlName="address" rows="3" placeholder="Full address"></textarea>
+              </div>
+              <small class="field-error" *ngIf="form.controls.address.touched && form.controls.address.invalid">
+                Address is required.
+              </small>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-section compact-section">
+          <div class="section-label">
+            <i class="pi pi-bolt"></i>
+            <span>Membership Details</span>
+          </div>
+
+          <div class="section-grid">
+            <div class="form-field plan-field">
+              <label>Select Plan</label>
+              <div class="select-shell">
+                <i class="pi pi-bolt"></i>
+                <p-select [options]="planOptions" formControlName="planName" placeholder="Select Plan"
+                  [showClear]="true"></p-select>
+              </div>
+              <small class="field-error" *ngIf="form.controls.planName.touched && form.controls.planName.invalid">
+                Plan selection is required.
+              </small>
+            </div>
+
+            <div class="form-field start-field">
+              <label>Start Date</label>
+              <div class="input-shell date-shell">
+                <i class="pi pi-calendar"></i>
+                <p-datepicker formControlName="startDate" dateFormat="dd-mm-yy" placeholder="Select Date"
+                  [showIcon]="false"></p-datepicker>
+              </div>
+              <small class="field-error" *ngIf="form.controls.startDate.touched && form.controls.startDate.invalid">
+                Start Date is required.
+              </small>
+            </div>
+
+            <div class="form-field duration-field">
+              <label>Duration</label>
+              <div class="input-shell">
+                <i class="pi pi-clock"></i>
+                <input pInputText type="number" min="1" formControlName="duration" placeholder="Months" readonly />
+                <span class="input-suffix">months</span>
+              </div>
+              <small class="field-error" *ngIf="form.controls.duration.touched && form.controls.duration.invalid">
+                Duration is required.
+              </small>
+            </div>
+
+            <div class="form-field trainer-field">
+              <label>Select Trainer</label>
+              <div class="select-shell">
+                <i class="pi pi-user"></i>
+                <p-select [options]="trainerOptions" formControlName="trainer" placeholder="Select Trainer"
+                  [showClear]="true"></p-select>
+              </div>
+              <small class="field-error" *ngIf="form.controls.trainer.touched && form.controls.trainer.invalid">
+                Trainer selection is required.
+              </small>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="form-actions">
+        <p-button type="button" label="Cancel" icon="pi pi-times" severity="secondary" (onClick)="cancel()"
+          styleClass="cancel-button"></p-button>
+        <p-button *ngIf="lastCreatedMember" type="button" label="Collect Payment" icon="pi pi-money-bill"
+          (onClick)="goToPayment()" styleClass="payment-button"></p-button>
+        <p-button type="submit" [label]="mode === 'edit' ? 'Update Member' : 'Save Member'" icon="pi pi-save"
+          styleClass="save-button"></p-button>
+      </div>
+    </form>
+  </div>
+</div>

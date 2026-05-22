@@ -1,0 +1,10 @@
+<div class="timeline-card">
+    <div class="timeline-card-header">
+        <span class="timeline-title">{{ event.title }}</span>
+        <span class="timeline-time">{{ event.timestamp | date: 'dd MMM yyyy, h:mm a' }}</span>
+    </div>
+    <div class="timeline-card-body">
+        <p class="timeline-details">{{ event.details }}</p>
+        <small class="timeline-user">By {{ event.user }}</small>
+    </div>
+</div>

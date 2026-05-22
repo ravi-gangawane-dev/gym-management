@@ -1,0 +1,74 @@
+<div class="details-page" *ngIf="enquiry">
+    <div class="details-header">
+        <div>
+            <h2>{{ enquiry.customerName }}</h2>
+            <p class="subtitle">{{ enquiry.productService }} enquiry for {{ enquiry.assignedTo }}</p>
+        </div>
+
+        <div class="action-group">
+            <a [routerLink]="['/enquiries/edit', enquiry.id]">
+                <p-button label="Edit" icon="pi pi-pencil"></p-button>
+            </a>
+            <p-button label="Archive" icon="pi pi-trash" severity="danger" (onClick)="deleteEnquiry()"></p-button>
+            <p-button label="Follow Up" icon="pi pi-calendar" (onClick)="openFollowUpDialog()"></p-button>
+            <p-button label="Convert to Member" icon="pi pi-user-plus" (onClick)="convertToMember()"></p-button>
+            <p-button label="Back" icon="pi pi-arrow-left" severity="secondary" (onClick)="goBack()"></p-button>
+        </div>
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-card">
+            <h3>Contact Info</h3>
+            <p><strong>Phone:</strong> {{ enquiry.contactNumber }}</p>
+            <p><strong>Email:</strong> {{ enquiry.email }}</p>
+            <p><strong>Company:</strong> {{ enquiry.company || 'N/A' }}</p>
+        </div>
+
+        <div class="summary-card">
+            <h3>Details</h3>
+            <p><strong>Assigned To:</strong> {{ enquiry.assignedTo }}</p>
+            <p><strong>Source:</strong> {{ enquiry.source }}</p>
+            <p><strong>Priority:</strong> {{ enquiry.priority }}</p>
+            <p><strong>Created:</strong> {{ enquiry.createdAt | date: 'dd MMM yyyy, h:mm a' }}</p>
+            <p><strong>Updated:</strong> {{ enquiry.updatedAt | date: 'dd MMM yyyy, h:mm a' }}</p>
+        </div>
+
+        <div class="summary-card status-card">
+            <h3>Status</h3>
+            <div class="status-buttons">
+                <button *ngFor="let status of statuses" type="button" class="status-option"
+                    [class.active]="enquiry.status === status" (click)="onStatusChange(status)">
+                    {{ status }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-blocks">
+        <div class="block">
+            <h4>Remarks</h4>
+            <p>{{ enquiry.remarks || 'No remarks added.' }}</p>
+        </div>
+
+        <div class="block">
+            <h4>Notes</h4>
+            <p>{{ enquiry.notes || 'No notes available.' }}</p>
+        </div>
+
+        <div class="block attachments-block" *ngIf="enquiry.attachments.length">
+            <h4>Attachments</h4>
+            <div class="attachment-item" *ngFor="let file of enquiry.attachments">
+                <i class="pi pi-file"></i>
+                <span>{{ file.name }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="timeline-section">
+        <h3>Activity Timeline</h3>
+        <app-follow-up-timeline [timeline]="enquiry.timeline"></app-follow-up-timeline>
+    </div>
+
+    <app-follow-up-dialog [(visible)]="followUpDialogVisible" (save)="onFollowUpSave($event)">
+    </app-follow-up-dialog>
+</div>

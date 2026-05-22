@@ -1,0 +1,71 @@
+<div class="login-page">
+  <main class="login-stage">
+    <section class="logo-disc" aria-label="RDG Fitness Club">
+      <img [src]="theme().logos.main" [alt]="theme().brand.shortName + ' Logo'" />
+    </section>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="login-card"
+      [attr.aria-label]="theme().brand.name + ' Admin Login'">
+      <span class="card-screw screw-one"></span>
+      <span class="card-screw screw-two"></span>
+      <span class="card-screw screw-three"></span>
+      <span class="card-screw screw-four"></span>
+
+      <div class="login-brand-lockup">
+        <img class="login-brand-logo" src="/assets/icon/RDG/RDG-GYM.png" alt="RDG Fitness Club" />
+      </div>
+
+      <label class="sr-only" for="login-email">Username or Email</label>
+      <div class="field username-field">
+        <span class="icon-badge"><i class="pi pi-user"></i></span>
+        <input id="login-email" pInputText formControlName="email" placeholder="Username or Email" />
+      </div>
+      <small>Enter your credentials to manage {{ theme().brand.shortName }}.</small>
+
+      <ng-container *ngIf="!forgotMode">
+        <label class="sr-only" for="login-password">Password</label>
+        <div class="field password-field">
+          <span class="icon-badge"><i class="pi pi-lock"></i></span>
+          <input id="login-password" pInputText formControlName="password" [type]="showPassword ? 'text' : 'password'"
+            placeholder="Password" />
+          <button type="button" class="eye-btn" (click)="showPassword = !showPassword" aria-label="Toggle password">
+            <i class="pi" [class.pi-eye]="!showPassword" [class.pi-eye-slash]="showPassword"></i>
+          </button>
+        </div>
+        <small>Enter your credentials to manage {{ theme().brand.shortName }}.</small>
+      </ng-container>
+
+      <small *ngIf="forgotMode" class="forgot-copy">Enter your registered email and send a password reminder.</small>
+
+      <div class="meta-row">
+        <button type="button" class="text-link" (click)="forgotMode = !forgotMode">
+          {{ forgotMode ? 'Back to Login' : 'Forgot Password?' }}
+        </button>
+        <label class="remember-me" *ngIf="!forgotMode">
+          <input type="checkbox" formControlName="rememberMe" />
+          <span>Remember Me</span>
+        </label>
+      </div>
+
+      <div class="star-divider" aria-hidden="true">
+        <span></span>
+        <strong>
+          <span>&#9733;</span>
+          <span class="center-star">&#9733;</span>
+          <span>&#9733;</span>
+        </strong>
+        <span></span>
+      </div>
+
+      <button *ngIf="!forgotMode" pButton type="submit" class="login-btn">LOG IN</button>
+      <button *ngIf="forgotMode" pButton type="button" class="login-btn reminder-btn" (click)="sendReminder()">
+        REMIND ME
+      </button>
+
+      <div class="screen-footer">
+        Need an Account? <button type="button">Request Access</button><br />
+        <button type="button">Support</button>
+      </div>
+    </form>
+  </main>
+</div>

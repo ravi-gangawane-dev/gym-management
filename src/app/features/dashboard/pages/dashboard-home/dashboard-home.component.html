@@ -1,0 +1,311 @@
+<div class="dashboard-screen">
+  <main class="dashboard-content">
+    <section class="dashboard-hero">
+      <div>
+        <span>Control Center</span>
+        <h2>{{ currentUser?.role || 'Dashboard' }} Dashboard</h2>
+        <p>Track the modules and widgets available for your role.</p>
+      </div>
+      <div class="dashboard-metrics" *ngIf="isWidgetVisible('heroMetrics')">
+        <article>
+          <i class="pi pi-users"></i>
+          <small>Total Members</small>
+          <strong>{{ summary.totalMembers }}</strong>
+        </article>
+        <article>
+          <i class="pi pi-wallet"></i>
+          <small>Revenue</small>
+          <strong>Rs. {{ summary.monthlyRevenue }}</strong>
+        </article>
+        <article>
+          <i class="pi pi-building"></i>
+          <small>Inside Gym</small>
+          <strong>{{ summary.insideGym }}</strong>
+        </article>
+        <article>
+          <i class="pi pi-clock"></i>
+          <small>Peak Time</small>
+          <strong>{{ summary.peakTime }}</strong>
+        </article>
+        <article>
+          <i class="pi pi-envelope"></i>
+          <small>Enquiries</small>
+          <strong>{{ summary.totalEnquiries }}</strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="widget-settings">
+      <div>
+        <h3>Dashboard Widgets</h3>
+        <span>Hide or show widgets for this login.</span>
+      </div>
+      <div class="widget-toggle-list">
+        <label *ngFor="let widget of allowedWidgets">
+          <input type="checkbox" [checked]="isWidgetVisible(widget.id)" (change)="toggleWidget(widget.id, $event)" />
+          <span>{{ widget.label }}</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="summary-grid" *ngIf="isWidgetVisible('summaryStats')">
+      <article>
+        <i class="pi pi-list"></i>
+        <small>Total Plans</small>
+        <strong>{{ summary.totalPlans }}</strong>
+      </article>
+      <article>
+        <i class="pi pi-check-circle"></i>
+        <small>Active Plans</small>
+        <strong>{{ summary.activePlans }}</strong>
+      </article>
+      <article>
+        <i class="pi pi-comments"></i>
+        <small>Total Enquiries</small>
+        <strong>{{ summary.totalEnquiries }}</strong>
+      </article>
+      <article>
+        <i class="pi pi-calendar-times"></i>
+        <small>Expiring Soon</small>
+        <strong>{{ summary.expiringSoon }}</strong>
+      </article>
+      <article>
+        <i class="pi pi-sign-in"></i>
+        <small>Today's Check-ins</small>
+        <strong>{{ summary.todaysCheckIns }}</strong>
+      </article>
+      <article>
+        <i class="pi pi-chart-pie"></i>
+        <small>Occupancy</small>
+        <strong>{{ summary.occupancyPercent }}%</strong>
+      </article>
+    </section>
+
+    <section class="focus-grid">
+      <article *ngFor="let card of focusCards" [ngClass]="'tone-' + card.tone">
+        <span class="focus-icon"><i [class]="card.icon"></i></span>
+        <div>
+          <small>{{ card.label }}</small>
+          <strong>{{ card.value }}</strong>
+          <p>{{ card.note }}</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="critical-alerts">
+      <div class="panel-header">
+        <div>
+          <h3>Critical Alerts</h3>
+          <span>Items that need attention before peak hours</span>
+        </div>
+      </div>
+      <div class="alert-grid">
+        <article *ngFor="let alert of criticalAlerts" [ngClass]="'tone-' + alert.tone">
+          <i [class]="alert.icon"></i>
+          <strong>{{ alert.label }}</strong>
+        </article>
+        <article *ngIf="!criticalAlerts.length" class="tone-blue">
+          <i class="pi pi-check-circle"></i>
+          <strong>No critical alerts</strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="quick-actions">
+      <div class="panel-header">
+        <div>
+          <h3>Quick Actions</h3>
+          <span>Most-used gym workflows for front desk and admin teams</span>
+        </div>
+      </div>
+      <div class="quick-action-grid">
+        <a *ngFor="let action of quickActions" [routerLink]="action.route">
+          <i [class]="action.icon"></i>
+          <span>
+            <strong>{{ action.label }}</strong>
+            <small>{{ action.note }}</small>
+            <kbd>⌘K</kbd>
+          </span>
+        </a>
+      </div>
+    </section>
+
+    <div class="dashboard-layout" *ngIf="isWidgetVisible('revenueChart') || isWidgetVisible('liveAttendance')">
+      <section class="chart-panel" *ngIf="isWidgetVisible('revenueChart')">
+        <div class="panel-header">
+          <div>
+            <h3>Revenue Chart</h3>
+            <span>Monthly payment trend</span>
+          </div>
+        </div>
+        <p-chart type="bar" [data]="revenue" [options]="chartOptions"></p-chart>
+      </section>
+
+      <aside class="attendance-panel" *ngIf="isWidgetVisible('liveAttendance')">
+        <div class="attendance-ring">
+          <strong>{{ summary.occupancyPercent }}%</strong>
+          <span>Occupancy</span>
+        </div>
+        <h3>Live Attendance</h3>
+        <p>{{ summary.occupancyPercent }}% current occupancy. Members can check in with QR, Face, NFC, biometric, or
+          manual entry.</p>
+        <a routerLink="/attendance">Open Attendance</a>
+      </aside>
+    </div>
+
+    <section class="operations-grid">
+      <article class="ops-card" *ngFor="let item of operations" [ngClass]="'tone-' + item.tone">
+        <small>{{ item.label }}</small>
+        <strong>{{ item.value }}</strong>
+        <span>{{ item.note }}</span>
+        <div class="mini-bar"><i></i></div>
+      </article>
+
+      <article class="schedule-card">
+        <div class="panel-header">
+          <div>
+            <h3>Today Schedule</h3>
+            <span>Upcoming batches and trainers</span>
+          </div>
+        </div>
+        <div class="schedule-row" *ngFor="let item of todaySchedule">
+          <time>{{ item.time }}</time>
+          <div>
+            <strong>{{ item.title }}</strong>
+            <span>{{ item.trainer }}</span>
+          </div>
+        </div>
+        <p class="empty-copy" *ngIf="!todaySchedule.length">No schedule records</p>
+      </article>
+    </section>
+
+    <section class="insight-grid">
+      <article class="tasks-card">
+        <div class="panel-header">
+          <div>
+            <h3>Today's Tasks</h3>
+            <span>Operational checklist</span>
+          </div>
+        </div>
+        <label *ngFor="let task of todayTasks">
+          <input type="checkbox" />
+          <span>{{ task }}</span>
+        </label>
+        <p class="empty-copy" *ngIf="!todayTasks.length">No tasks</p>
+      </article>
+
+      <article class="funnel-card">
+        <div class="panel-header">
+          <div>
+            <h3>Membership Expiry Funnel</h3>
+            <span>Retention follow-up priority</span>
+          </div>
+        </div>
+        <div class="funnel-row" *ngFor="let item of expiryFunnel">
+          <div>
+            <strong>{{ item.label }}</strong>
+            <span>{{ item.value }} members</span>
+          </div>
+          <em [style.width]="item.width"></em>
+        </div>
+      </article>
+
+      <article class="heatmap-card">
+        <div class="panel-header">
+          <div>
+            <h3>Attendance Heatmap</h3>
+            <span>Peak crowd timings</span>
+          </div>
+        </div>
+        <div class="heat-row" *ngFor="let row of heatmap">
+          <strong>{{ row.day }}</strong>
+          <span *ngFor="let value of row.bars" [style.opacity]="value / 100"></span>
+        </div>
+      </article>
+    </section>
+
+    <section class="ai-panel">
+      <div class="panel-header">
+        <div>
+          <h3>AI Insights</h3>
+          <span>Smart recommendations for retention and growth</span>
+        </div>
+      </div>
+      <div class="ai-grid">
+        <article *ngFor="let insight of aiInsights">
+          <i class="pi pi-sparkles"></i>
+          <div>
+            <strong>{{ insight.title }}</strong>
+            <p>{{ insight.text }}</p>
+            <button type="button">{{ insight.action }}</button>
+          </div>
+        </article>
+        <article *ngIf="!aiInsights.length">
+          <i class="pi pi-check-circle"></i>
+          <div>
+            <strong>No insights</strong>
+            <p>Add records to generate insights.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="mini-analytics">
+      <article *ngFor="let item of miniAnalytics" [ngClass]="'tone-' + item.tone">
+        <small>{{ item.label }}</small>
+        <strong>{{ item.value }}</strong>
+        <span>Compared to last month</span>
+      </article>
+    </section>
+
+    <section class="table-panel" *ngIf="isWidgetVisible('recentPayments')">
+      <app-table-toolbar title="Recent Payments" subtitle="Latest successful and pending transactions">
+        <app-search-bar
+          [value]="paymentSearchTerm"
+          placeholder="Search payments"
+          (valueChange)="paymentSearchTerm = $event">
+        </app-search-bar>
+      </app-table-toolbar>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Plan</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Receipt</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let payment of filteredRecentPayments; let index = index">
+              <td>
+                <span class="member-cell">
+                  <b>{{ initials(payment.member) }}</b>
+                  {{ payment.member }}
+                </span>
+              </td>
+              <td>{{ payment.plan }}</td>
+              <td>Rs. {{ payment.amount }}</td>
+              <td>{{ payment.method }}</td>
+              <td>{{ payment.date }}</td>
+              <td>
+                <span class="status-pill" [ngClass]="'status-' + payment.status.toLowerCase()">
+                  <i class="pi pi-circle-fill"></i>
+                  {{ payment.status }}
+                </span>
+              </td>
+              <td><button type="button" class="receipt-btn"><i class="pi pi-download"></i></button></td>
+            </tr>
+            <tr *ngIf="!filteredRecentPayments.length">
+              <td colspan="7">No payments found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>

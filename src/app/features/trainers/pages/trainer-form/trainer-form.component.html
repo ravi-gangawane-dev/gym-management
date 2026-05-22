@@ -1,0 +1,96 @@
+<div class="trainer-form-screen">
+    <div class="trainer-form-card">
+        <h2>{{ mode === 'edit' ? 'Edit Staff' : 'Add Staff' }}</h2>
+
+        <form [formGroup]="form" (ngSubmit)="submit()">
+            <div class="photo-upload">
+                <button type="button" class="photo-circle" (click)="photoInput.click()" title="Upload profile photo">
+                    <img *ngIf="photoPreviewUrl" [src]="photoPreviewUrl" alt="Staff photo" />
+                    <i *ngIf="!photoPreviewUrl" class="pi pi-camera"></i>
+                </button>
+                <div>
+                    <strong>Profile Photo</strong>
+                    <span>JPG or PNG, shown on staff cards and profiles</span>
+                    <button pButton type="button" label="Choose Photo" icon="pi pi-image" class="photo-action" (click)="photoInput.click()"></button>
+                    <small *ngIf="photoFileName">{{ photoFileName }}</small>
+                    <input #photoInput type="file" accept="image/*" (change)="onFileSelected($event)" />
+                </div>
+            </div>
+
+            <div class="field-row">
+                <label>
+                    First Name
+                    <input pInputText formControlName="firstName" />
+                </label>
+                <label>
+                    Last Name
+                    <input pInputText formControlName="lastName" />
+                </label>
+            </div>
+
+            <div class="field-row">
+                <label>
+                    Role
+                    <p-select formControlName="role" [options]="roleOptions" appendTo="body" />
+                </label>
+                <label>
+                    Department / Specialization
+                    <p-select formControlName="specialization" [options]="specializationOptions" appendTo="body" />
+                </label>
+            </div>
+
+            <div class="field-row">
+                <label>
+                    Status
+                    <p-select formControlName="status" [options]="statusOptions" appendTo="body" />
+                </label>
+                <label>
+                    Monthly Salary
+                    <input pInputText type="number" min="0" formControlName="salary" />
+                </label>
+            </div>
+
+            <div class="field-row">
+                <label>
+                    Phone
+                    <input pInputText formControlName="phone" />
+                </label>
+                <label>
+                    Email
+                    <input pInputText formControlName="email" />
+                </label>
+            </div>
+
+            <div class="field-row">
+                <label>
+                    Gender
+                    <p-select formControlName="gender" [options]="genderOptions" appendTo="body" />
+                </label>
+                <label>
+                    Experience (years)
+                    <input pInputText type="number" min="0" formControlName="experienceYears" />
+                </label>
+            </div>
+
+            <label class="full-width">
+                Permissions
+                <input pInputText formControlName="permissions" placeholder="Members, Attendance, Reports" />
+            </label>
+
+            <label class="full-width">
+                Certifications
+                <input pInputText formControlName="certifications" />
+            </label>
+
+            <label class="full-width">
+                Notes
+                <textarea pInputTextarea rows="4" formControlName="notes"></textarea>
+            </label>
+
+            <div class="form-actions">
+                <button pButton type="button" class="cancel" label="Cancel" (click)="cancel()"></button>
+                <button pButton type="submit" label="Save Staff" class="save"></button>
+            </div>
+        </form>
+    </div>
+</div>

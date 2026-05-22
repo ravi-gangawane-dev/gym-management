@@ -1,0 +1,49 @@
+<div class="trainer-details-screen" *ngIf="trainer">
+    <div class="trainer-details-card">
+        <div class="trainer-details-header">
+            <div>
+                <h2>{{ trainer.fullName }}</h2>
+                <p class="specialization">{{ trainer.specialization }}</p>
+            </div>
+            <div class="detail-actions">
+                <button pButton type="button" label="Edit" icon="pi pi-pencil" (click)="editTrainer()"></button>
+                <button pButton type="button" label="Delete" icon="pi pi-trash" class="danger"
+                    (click)="deleteTrainer()"></button>
+                <button pButton type="button" label="Back" icon="pi pi-arrow-left" class="secondary"
+                    (click)="goBack()"></button>
+            </div>
+        </div>
+
+        <div class="trainer-details-grid">
+            <div>
+                <h4>Contact</h4>
+                <p><strong>Phone:</strong> {{ trainer.phone }}</p>
+                <p><strong>Email:</strong> {{ trainer.email }}</p>
+            </div>
+
+            <div>
+                <h4>Profile</h4>
+                <p><strong>Role:</strong> {{ trainer.role || 'Trainer' }}</p>
+                <p><strong>Gender:</strong> {{ trainer.gender }}</p>
+                <p><strong>Experience:</strong> {{ trainer.experienceYears }} years</p>
+                <p><strong>Salary:</strong> Rs. {{ trainer.salary || 35000 }}</p>
+                <p><strong>Status:</strong> {{ trainer.status }}</p>
+            </div>
+
+            <div class="full-column">
+                <h4>Permissions</h4>
+                <p>{{ trainer.permissions?.join(', ') || 'Members, Attendance, PT Sessions' }}</p>
+            </div>
+
+            <div class="full-column">
+                <h4>Certifications</h4>
+                <p>{{ trainer.certifications || 'N/A' }}</p>
+            </div>
+
+            <div class="full-column">
+                <h4>Notes</h4>
+                <p>{{ trainer.notes || 'No notes available.' }}</p>
+            </div>
+        </div>
+    </div>
+</div>

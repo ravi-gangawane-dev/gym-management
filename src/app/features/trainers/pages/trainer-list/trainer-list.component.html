@@ -1,0 +1,273 @@
+<div class="trainers-screen">
+    <main class="trainers-content">
+        <section class="staff-hero">
+            <div>
+                <span>Staff Management</span>
+                <h2>Staff</h2>
+                <p>Manage receptionists, trainers, managers, salaries, and access permissions.</p>
+            </div>
+            <div class="staff-metrics">
+                <article>
+                    <small>Total Staff</small>
+                    <strong>{{ totalStaffCount }}</strong>
+                </article>
+                <article>
+                    <small>Receptionists</small>
+                    <strong>{{ receptionistCount }}</strong>
+                </article>
+                <article>
+                    <small>Managers</small>
+                    <strong>{{ managerCount }}</strong>
+                </article>
+                <article>
+                    <small>Salaries</small>
+                    <strong>{{ monthlySalaryTotal | currency:'INR':'symbol':'1.2-2':'en-IN' }}</strong>
+                </article>
+                <article>
+                    <small>Active</small>
+                    <strong>{{ activeStaffCount }}</strong>
+                </article>
+            </div>
+        </section>
+
+        <div class="trainers-layout">
+            <section class="table-panel">
+                <app-table-toolbar title="Staff Directory" [subtitle]="totalTrainers + ' matching records'">
+                    <div class="view-toggle">
+                        <span>View</span>
+                        <button type="button" class="view-button" [class.active]="viewMode === 'table'"
+                            (click)="setViewMode('table')">
+                            <i class="pi pi-table"></i>
+                        </button>
+                        <button type="button" class="view-button" [class.active]="viewMode === 'card'"
+                            (click)="setViewMode('card')">
+                            <i class="pi pi-id-card"></i>
+                        </button>
+                    </div>
+
+                    <app-search-bar
+                        [value]="searchTerm"
+                        placeholder="Search staff, role, contact"
+                        (valueChange)="searchTerm = $event">
+                    </app-search-bar>
+
+                    <a routerLink="/staff/add" class="add-link">
+                        <p-button label="Add New Staff" icon="pi pi-plus" />
+                    </a>
+                </app-table-toolbar>
+
+                <div class="table-wrap">
+                    <ng-container *ngIf="viewMode === 'table'">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th><button type="button" class="sort-header" (click)="sortBy('name')">Name <i [class]="sortIcon('name')"></i></button></th>
+                                    <th><button type="button" class="sort-header" (click)="sortBy('role')">Role <i [class]="sortIcon('role')"></i></button></th>
+                                    <th><button type="button" class="sort-header" (click)="sortBy('specialization')">Department <i [class]="sortIcon('specialization')"></i></button></th>
+                                    <th><button type="button" class="sort-header" (click)="sortBy('experienceYears')">Experience <i [class]="sortIcon('experienceYears')"></i></button></th>
+                                    <th><button type="button" class="sort-header" (click)="sortBy('salary')">Salary <i [class]="sortIcon('salary')"></i></button></th>
+                                    <th>Permissions</th>
+                                    <th><button type="button" class="sort-header" (click)="sortBy('phone')">Phone <i [class]="sortIcon('phone')"></i></button></th>
+                                    <th><button type="button" class="sort-header" (click)="sortBy('email')">Email <i [class]="sortIcon('email')"></i></button></th>
+                                    <th><button type="button" class="sort-header" (click)="sortBy('status')">Status <i [class]="sortIcon('status')"></i></button></th>
+                                    <th>Actions</th>
+                                </tr>
+                                <tr class="column-filter-row">
+                                    <th>
+                                        <div class="column-filter-control">
+                                            <input pInputText [(ngModel)]="columnFilters.name" (ngModelChange)="onColumnFilterChange()" placeholder="Type to search" />
+                                            <button *ngIf="columnFilters.name" type="button" class="clear-column-filter" (click)="clearColumnFilter('name')" title="Clear filter" aria-label="Clear name filter">
+                                                <i class="pi pi-times"></i>
+                                            </button>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="column-filter-control select-filter">
+                                            <p-select [options]="roleOptions.slice(1)" [(ngModel)]="columnFilters.role" (ngModelChange)="onColumnFilterChange()" placeholder="Any" appendTo="body" [showClear]="true"></p-select>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="column-filter-control select-filter">
+                                            <p-select [options]="departmentOptions" [(ngModel)]="columnFilters.specialization" (ngModelChange)="onColumnFilterChange()" placeholder="Any" appendTo="body" [showClear]="true"></p-select>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="column-filter-control number-filter">
+                                            <p-inputNumber [(ngModel)]="columnAmountFilters.experienceYears" (ngModelChange)="onColumnFilterChange()" [min]="0" placeholder="Min"></p-inputNumber>
+                                            <button *ngIf="columnAmountFilters.experienceYears" type="button" class="clear-column-filter" (click)="clearColumnAmountFilter('experienceYears')" title="Clear filter" aria-label="Clear experience filter">
+                                                <i class="pi pi-times"></i>
+                                            </button>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="column-filter-control number-filter">
+                                            <p-inputNumber [(ngModel)]="columnAmountFilters.salary" (ngModelChange)="onColumnFilterChange()" [min]="0" placeholder="Min"></p-inputNumber>
+                                            <button *ngIf="columnAmountFilters.salary" type="button" class="clear-column-filter" (click)="clearColumnAmountFilter('salary')" title="Clear filter" aria-label="Clear salary filter">
+                                                <i class="pi pi-times"></i>
+                                            </button>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="column-filter-control">
+                                            <input pInputText [(ngModel)]="columnFilters.permissions" (ngModelChange)="onColumnFilterChange()" placeholder="Type to search" />
+                                            <button *ngIf="columnFilters.permissions" type="button" class="clear-column-filter" (click)="clearColumnFilter('permissions')" title="Clear filter" aria-label="Clear permissions filter">
+                                                <i class="pi pi-times"></i>
+                                            </button>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="column-filter-control">
+                                            <input pInputText [(ngModel)]="columnFilters.phone" (ngModelChange)="onColumnFilterChange()" placeholder="Type to search" />
+                                            <button *ngIf="columnFilters.phone" type="button" class="clear-column-filter" (click)="clearColumnFilter('phone')" title="Clear filter" aria-label="Clear phone filter">
+                                                <i class="pi pi-times"></i>
+                                            </button>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="column-filter-control">
+                                            <input pInputText [(ngModel)]="columnFilters.email" (ngModelChange)="onColumnFilterChange()" placeholder="Type to search" />
+                                            <button *ngIf="columnFilters.email" type="button" class="clear-column-filter" (click)="clearColumnFilter('email')" title="Clear filter" aria-label="Clear email filter">
+                                                <i class="pi pi-times"></i>
+                                            </button>
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="column-filter-control select-filter">
+                                            <p-select [options]="statusOptions.slice(1)" [(ngModel)]="columnFilters.status" (ngModelChange)="onColumnFilterChange()" placeholder="Select One" appendTo="body" [showClear]="true"></p-select>
+                                        </div>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let trainer of pagedTrainers; trackBy: trackByTrainer">
+                                    <td>
+                                        <div class="user-cell">
+                                            <button type="button" class="photo-button" (click)="openImagePreview(trainer)" title="Preview photo">
+                                                <img class="trainer-photo" [src]="trainer.photo" [alt]="trainer.name" />
+                                            </button>
+                                            <a [routerLink]="['/staff', trainer.id]" class="trainer-name">{{ trainer.name
+                                                }}</a>
+                                        </div>
+                                    </td>
+                                    <td>{{ trainer.role }}</td>
+                                    <td>{{ trainer.specialization }}</td>
+                                    <td>{{ trainer.experienceYears }} yrs</td>
+                                    <td>{{ trainer.salary | currency:'INR':'symbol':'1.2-2':'en-IN' }}</td>
+                                    <td>
+                                        <span class="permission-pill" *ngFor="let permission of trainer.permissions">{{ permission }}</span>
+                                    </td>
+                                    <td>{{ trainer.phone }}</td>
+                                    <td>{{ trainer.email }}</td>
+                                    <td>
+                                        <span class="status-pill"
+                                            [ngClass]="trainer.status.toLowerCase().replace(' ', '-')">
+                                            <i class="pi pi-circle-fill"></i>
+                                            {{ trainer.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="row-actions">
+                                            <a [routerLink]="['/staff', trainer.id]" title="View Staff"
+                                                class="action-link">
+                                                <i class="pi pi-eye"></i>
+                                            </a>
+                                            <button type="button" [routerLink]="['/staff/edit', trainer.id]"
+                                                title="Edit Staff">
+                                                <i class="pi pi-pencil"></i>
+                                            </button>
+                                            <button type="button" class="danger" (click)="deleteTrainer(trainer.id)"
+                                                title="Delete Staff">
+                                                <i class="pi pi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </ng-container>
+
+                    <ng-container *ngIf="viewMode === 'card'">
+                        <div class="card-grid">
+                            <article class="trainer-card" *ngFor="let trainer of pagedTrainers; trackBy: trackByTrainer">
+                                <div class="trainer-card-header">
+                                    <button type="button" class="photo-button large" (click)="openImagePreview(trainer)" title="Preview photo">
+                                        <img class="trainer-photo" [src]="trainer.photo" [alt]="trainer.name" />
+                                    </button>
+                                    <div class="trainer-title">
+                                        <h3>
+                                            <a [routerLink]="['/staff', trainer.id]">{{ trainer.name }}</a>
+                                        </h3>
+                                        <span>{{ trainer.role }} · {{ trainer.specialization }}</span>
+                                    </div>
+                                    <span class="status-pill"
+                                        [ngClass]="trainer.status.toLowerCase().replace(' ', '-')">
+                                        <i class="pi pi-circle-fill"></i>
+                                        {{ trainer.status }}
+                                    </span>
+                                </div>
+
+                                <div class="trainer-card-body">
+                                    <div class="staff-stat">
+                                        <small>Experience</small>
+                                        <strong>{{ trainer.experienceYears }} yrs</strong>
+                                    </div>
+                                    <div class="staff-stat">
+                                        <small>Salary</small>
+                                        <strong>{{ trainer.salary | currency:'INR':'symbol':'1.2-2':'en-IN' }}</strong>
+                                    </div>
+                                    <div class="staff-contact">
+                                        <span><i class="pi pi-phone"></i>{{ trainer.phone }}</span>
+                                        <span><i class="pi pi-envelope"></i>{{ trainer.email }}</span>
+                                    </div>
+                                    <div class="permission-list">
+                                        <span class="permission-pill" *ngFor="let permission of trainer.permissions">
+                                            {{ permission }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="trainer-card-actions">
+                                    <a [routerLink]="['/staff', trainer.id]" title="View Staff">
+                                        <i class="pi pi-eye"></i>
+                                    </a>
+                                    <button type="button" [routerLink]="['/staff/edit', trainer.id]"
+                                        title="Edit Staff">
+                                        <i class="pi pi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="danger" (click)="deleteTrainer(trainer.id)">
+                                        <i class="pi pi-trash"></i>
+                                    </button>
+                                </div>
+                            </article>
+                        </div>
+                    </ng-container>
+
+                    <app-empty-state
+                        *ngIf="totalTrainers === 0"
+                        icon="pi pi-id-card"
+                        title="No staff found"
+                        message="Adjust filters or add a staff member to continue.">
+                    </app-empty-state>
+                </div>
+
+                <footer class="table-footer">
+                    <span>Showing {{ showingStart }} to {{ showingEnd }} of {{ totalTrainers }}</span>
+                    <div class="card flex justify-center pagination-card">
+                        <p-paginator (onPageChange)="onPageChange($event)" [first]="first" [rows]="rows"
+                            [totalRecords]="totalTrainers" [rowsPerPageOptions]="[10, 20, 30]" />
+                    </div>
+                </footer>
+            </section>
+
+        </div>
+    </main>
+
+    <app-profile-image-viewer
+        title="Staff Photo"
+        [visible]="!!previewImage"
+        [src]="previewImage?.src || ''"
+        [alt]="previewImage?.alt || ''"
+        (visibleChange)="previewImage = $event ? previewImage : null">
+    </app-profile-image-viewer>
+</div>

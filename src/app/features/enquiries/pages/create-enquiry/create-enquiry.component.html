@@ -1,0 +1,106 @@
+<div class="enquiry-form-page">
+    <div class="form-panel">
+        <div class="form-header">
+            <div>
+                <h2>Create Enquiry</h2>
+                <p>Enter customer details, product selection, priority and scheduling information.</p>
+            </div>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="enquiry-form">
+            <div class="grid">
+                <div class="field">
+                    <label>Customer Name</label>
+                    <input pInputText formControlName="customerName" placeholder="Customer name" />
+                </div>
+
+                <div class="field">
+                    <label>Contact Number</label>
+                    <input pInputText formControlName="contactNumber" placeholder="Phone number" />
+                </div>
+
+                <div class="field">
+                    <label>Email</label>
+                    <input pInputText formControlName="email" placeholder="Email address" />
+                </div>
+
+                <div class="field">
+                    <label>Company</label>
+                    <input pInputText formControlName="company" placeholder="Company or organization" />
+                </div>
+
+                <div class="field">
+                    <label>Product / Service</label>
+                    <p-select [options]="productOptions" formControlName="productService"
+                        placeholder="Select product"></p-select>
+                </div>
+
+                <div class="field">
+                    <label>Priority</label>
+                    <p-select [options]="priorityOptions" formControlName="priority"
+                        placeholder="Select priority"></p-select>
+                </div>
+
+                <div class="field">
+                    <label>Status</label>
+                    <p-select [options]="['New', 'In Progress', 'Follow-Up', 'Converted', 'Closed', 'Rejected']"
+                        formControlName="status" placeholder="Select status"></p-select>
+                </div>
+
+                <div class="field">
+                    <label>Source</label>
+                    <p-select [options]="sourceOptions" formControlName="source" placeholder="Select source"></p-select>
+                </div>
+
+                <div class="field">
+                    <label>Assigned User</label>
+                    <p-select [options]="assignedUsers" formControlName="assignedTo"
+                        placeholder="Select user"></p-select>
+                </div>
+
+                <div class="field wide">
+                    <label>Notes</label>
+                    <textarea pInputTextarea formControlName="notes" rows="4"
+                        placeholder="Add internal notes"></textarea>
+                </div>
+
+                <div class="field wide">
+                    <label>Remarks</label>
+                    <textarea pInputTextarea formControlName="remarks" rows="4"
+                        placeholder="Add customer remarks"></textarea>
+                </div>
+
+                <div class="field wide">
+                    <label>Attachments</label>
+                    <label class="attachment-upload">
+                        <input type="file" multiple (change)="onAttachmentsSelected($event)" />
+                        <span class="upload-icon">
+                            <i class="pi pi-upload"></i>
+                        </span>
+                        <span class="upload-copy">
+                            <strong>Upload enquiry documents</strong>
+                            <small>Attach ID proof, enquiry forms, screenshots, or notes. Multiple files supported.</small>
+                        </span>
+                        <span class="upload-action">Choose Files</span>
+                    </label>
+                    <div class="attachment-list" *ngIf="attachments.length">
+                        <div class="attachment-item" *ngFor="let attachment of attachments">
+                            <span class="file-icon">
+                                <i class="pi pi-file"></i>
+                            </span>
+                            <span>{{ attachment.name }}</span>
+                            <button type="button" (click)="removeAttachment(attachment.id)" title="Remove attachment">
+                                <i class="pi pi-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <p-button type="button" label="Cancel" severity="secondary" (onClick)="cancel()"></p-button>
+                <p-button type="submit" label="Create Enquiry"></p-button>
+            </div>
+        </form>
+    </div>
+</div>

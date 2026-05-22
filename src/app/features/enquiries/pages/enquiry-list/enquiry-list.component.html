@@ -1,0 +1,200 @@
+<div class="enquiries-screen">
+    <main class="enquiries-content">
+        <section class="enquiries-hero">
+            <div>
+                <span>Enquiry Management</span>
+                <h2>Enquiries</h2>
+                <p>Track incoming leads, assignments, follow-ups, sources, and conversion status.</p>
+            </div>
+            <div class="enquiry-metrics">
+                <article>
+                    <small>Total Enquiries</small>
+                    <strong>{{ activeEnquiries.length }}</strong>
+                </article>
+                <article>
+                    <small>New</small>
+                    <strong>{{ newCount }}</strong>
+                </article>
+                <article>
+                    <small>Follow-Ups</small>
+                    <strong>{{ followUpCount }}</strong>
+                </article>
+                <article>
+                    <small>Converted</small>
+                    <strong>{{ convertedCount }}</strong>
+                </article>
+                <article>
+                    <small>Archived</small>
+                    <strong>{{ archivedCount }}</strong>
+                </article>
+            </div>
+        </section>
+
+        <div class="enquiries-layout">
+            <section class="table-panel">
+                <app-table-toolbar title="Enquiry Pipeline" [subtitle]="totalEnquiries + ' matching records'">
+                    <div class="view-switch" aria-label="Enquiry list view">
+                        <button type="button" [class.active]="viewMode === 'active'" (click)="setViewMode('active')">
+                            Active
+                            <strong>{{ activeEnquiries.length }}</strong>
+                        </button>
+                        <button type="button" [class.active]="viewMode === 'archived'" (click)="setViewMode('archived')">
+                            Archived
+                            <strong>{{ archivedCount }}</strong>
+                        </button>
+                    </div>
+
+                    <app-search-bar
+                        [value]="search"
+                        placeholder="Search enquiries"
+                        (valueChange)="setSearch($event)">
+                    </app-search-bar>
+
+                    <a routerLink="/enquiries/create" class="add-link">
+                        <p-button label="New Enquiry" icon="pi pi-plus" />
+                    </a>
+                </app-table-toolbar>
+
+                <div *ngIf="viewMode === 'archived'" class="archive-note">
+                    <i class="pi pi-box"></i>
+                    <span>Archived enquiries are hidden from the active pipeline. Restore any enquiry when it needs follow-up again.</span>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><button type="button" class="sort-header" (click)="sortBy('customerName')">Customer <i [class]="sortIcon('customerName')"></i></button></th>
+                                <th><button type="button" class="sort-header" (click)="sortBy('productService')">Product / Service <i [class]="sortIcon('productService')"></i></button></th>
+                                <th><button type="button" class="sort-header" (click)="sortBy('assignedTo')">Assigned <i [class]="sortIcon('assignedTo')"></i></button></th>
+                                <th><button type="button" class="sort-header" (click)="sortBy('status')">Status <i [class]="sortIcon('status')"></i></button></th>
+                                <th><button type="button" class="sort-header" (click)="sortBy('priority')">Priority <i [class]="sortIcon('priority')"></i></button></th>
+                                <th><button type="button" class="sort-header" (click)="sortBy('source')">Source <i [class]="sortIcon('source')"></i></button></th>
+                                <th><button type="button" class="sort-header" (click)="sortBy('createdAt')">Created <i [class]="sortIcon('createdAt')"></i></button></th>
+                                <th>Actions</th>
+                            </tr>
+                            <tr class="column-filter-row">
+                                <th>
+                                    <div class="column-filter-control">
+                                        <input pInputText [(ngModel)]="columnFilters.customerName" (ngModelChange)="onColumnFilterChange()" placeholder="Type to search" />
+                                        <button *ngIf="columnFilters.customerName" type="button" class="clear-column-filter" (click)="clearColumnFilter('customerName')" title="Clear filter" aria-label="Clear customer filter">
+                                            <i class="pi pi-times"></i>
+                                        </button>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="column-filter-control">
+                                        <input pInputText [(ngModel)]="columnFilters.productService" (ngModelChange)="onColumnFilterChange()" placeholder="Type to search" />
+                                        <button *ngIf="columnFilters.productService" type="button" class="clear-column-filter" (click)="clearColumnFilter('productService')" title="Clear filter" aria-label="Clear service filter">
+                                            <i class="pi pi-times"></i>
+                                        </button>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="column-filter-control select-filter">
+                                        <p-select [options]="assignedUsers.slice(1)" [(ngModel)]="columnFilters.assignedTo" (ngModelChange)="onColumnFilterChange()" placeholder="Any" appendTo="body" [showClear]="true"></p-select>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="column-filter-control select-filter">
+                                        <p-select [options]="statusOptions" [(ngModel)]="columnFilters.status" (ngModelChange)="onColumnFilterChange()" placeholder="Select One" appendTo="body" [showClear]="true"></p-select>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="column-filter-control select-filter">
+                                        <p-select [options]="priorityOptions" [(ngModel)]="columnFilters.priority" (ngModelChange)="onColumnFilterChange()" placeholder="Any" appendTo="body" [showClear]="true"></p-select>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="column-filter-control select-filter">
+                                        <p-select [options]="sources.slice(1)" [(ngModel)]="columnFilters.source" (ngModelChange)="onColumnFilterChange()" placeholder="Any" appendTo="body" [showClear]="true"></p-select>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="column-filter-control date-filter">
+                                        <p-datepicker [(ngModel)]="columnDateFilter" (ngModelChange)="onColumnFilterChange()" dateFormat="dd-mm-yy" placeholder="Select date" appendTo="body" [showIcon]="false" [showButtonBar]="true"></p-datepicker>
+                                        <button *ngIf="columnDateFilter" type="button" class="clear-column-filter" (click)="clearColumnDateFilter()" title="Clear date filter" aria-label="Clear created date filter">
+                                            <i class="pi pi-times"></i>
+                                        </button>
+                                    </div>
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let enquiry of pagedEnquiries" [class.archived-row]="viewMode === 'archived'">
+                                <td>
+                                    <div class="customer-cell">
+                                        <a [routerLink]="['/enquiries', enquiry.id]" class="customer-name">
+                                            {{ enquiry.customerName }}
+                                        </a>
+                                        <small>{{ enquiry.contactNumber }}</small>
+                                    </div>
+                                </td>
+                                <td>{{ enquiry.productService }}</td>
+                                <td>{{ enquiry.assignedTo }}</td>
+                                <td>
+                                    <span class="status-pill" [ngClass]="getBadgeClass(enquiry.status)">
+                                        <i class="pi pi-circle-fill"></i>
+                                        {{ enquiry.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="priority-pill" [ngClass]="enquiry.priority.toLowerCase()">
+                                        {{ enquiry.priority }}
+                                    </span>
+                                </td>
+                                <td>{{ enquiry.source }}</td>
+                                <td>{{ enquiry.createdAt | date: 'dd MMM yyyy' }}</td>
+                                <td>
+                                    <div class="row-actions">
+                                        <ng-container *ngIf="viewMode === 'active'; else archivedActions">
+                                            <a [routerLink]="['/enquiries', enquiry.id]" title="View Enquiry">
+                                                <i class="pi pi-eye"></i>
+                                            </a>
+                                            <a [routerLink]="['/enquiries/edit', enquiry.id]" title="Edit Enquiry">
+                                                <i class="pi pi-pencil"></i>
+                                            </a>
+                                            <button type="button" class="danger" (click)="deleteEnquiry(enquiry.id)"
+                                                title="Archive Enquiry">
+                                                <i class="pi pi-box"></i>
+                                            </button>
+                                            <button type="button" class="delete" (click)="permanentDeleteEnquiry(enquiry)"
+                                                title="Delete Permanently">
+                                                <i class="pi pi-trash"></i>
+                                            </button>
+                                        </ng-container>
+                                        <ng-template #archivedActions>
+                                            <button type="button" class="restore" (click)="restoreEnquiry(enquiry.id)"
+                                                title="Restore Enquiry">
+                                                <i class="pi pi-refresh"></i>
+                                            </button>
+                                            <button type="button" class="delete" (click)="permanentDeleteEnquiry(enquiry)"
+                                                title="Delete Permanently">
+                                                <i class="pi pi-trash"></i>
+                                            </button>
+                                        </ng-template>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr *ngIf="filteredEnquiries.length === 0">
+                                <td colspan="8" class="empty-state">
+                                    No {{ viewMode === 'archived' ? 'archived' : 'active' }} enquiries found
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <footer class="table-footer">
+                    <span>Showing {{ showingStart }} to {{ showingEnd }} of {{ totalEnquiries }}</span>
+                    <div class="card flex justify-center pagination-card">
+                        <p-paginator (onPageChange)="onPageChange($event)" [first]="first" [rows]="rows"
+                            [totalRecords]="totalEnquiries" [rowsPerPageOptions]="[10, 20, 30]" />
+                    </div>
+                </footer>
+            </section>
+
+        </div>
+    </main>
+</div>

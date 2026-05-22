@@ -1,0 +1,234 @@
+<div class="members-screen">
+
+
+  <main class="members-content">
+
+    <section class="members-hero">
+      <div>
+        <span>Member Management</span>
+        <h2>Members</h2>
+        <p>Manage memberships, plans, expiry status, trainer assignments, and retention filters.</p>
+      </div>
+      <div class="member-metrics">
+        <article>
+          <small>Total Members</small>
+          <strong>{{ totalMembersCount }}</strong>
+        </article>
+        <article>
+          <small>Active</small>
+          <strong>{{ activeMembersCount }}</strong>
+        </article>
+        <article>
+          <small>Expiring</small>
+          <strong>{{ expiringMembersCount }}</strong>
+        </article>
+        <article>
+          <small>Expired</small>
+          <strong>{{ expiredMembersCount }}</strong>
+        </article>
+        <article>
+          <small>Inactive</small>
+          <strong>{{ inactiveMembersCount }}</strong>
+        </article>
+      </div>
+    </section>
+
+    <div class="members-layout">
+      <section class="table-panel">
+        <app-table-toolbar title="Member Directory" [subtitle]="totalMembers + ' matching records'">
+          <div class="view-toggle">
+            <span>View</span>
+            <button type="button" class="view-button" [class.active]="viewMode === 'table'"
+              (click)="setViewMode('table')">
+              <i class="pi pi-table"></i>
+            </button>
+            <button type="button" class="view-button" [class.active]="viewMode === 'card'"
+              (click)="setViewMode('card')">
+              <i class="pi pi-id-card"></i>
+            </button>
+          </div>
+
+          <app-search-bar
+            [value]="searchTerm"
+            placeholder="Search name, plan, trainer, ID"
+            (valueChange)="searchTerm = $event">
+          </app-search-bar>
+
+          <a routerLink="/members/add" class="add-link">
+            <p-button label="Add New Member" icon="pi pi-plus" />
+          </a>
+        </app-table-toolbar>
+
+        <div class="table-wrap">
+          <ng-container *ngIf="viewMode === 'table'">
+            <table>
+              <thead>
+                <tr>
+                  <th><button type="button" class="sort-header" (click)="sortBy('memberId')">Member ID <i [class]="sortIcon('memberId')"></i></button></th>
+                  <th><button type="button" class="sort-header" (click)="sortBy('name')">Member Name <i [class]="sortIcon('name')"></i></button></th>
+                  <th><button type="button" class="sort-header" (click)="sortBy('planType')">Plan Type <i [class]="sortIcon('planType')"></i></button></th>
+                  <th><button type="button" class="sort-header" (click)="sortBy('joiningDateValue')">Joining Date <i [class]="sortIcon('joiningDateValue')"></i></button></th>
+                  <th><button type="button" class="sort-header" (click)="sortBy('expiryDateValue')">Expiry Date <i [class]="sortIcon('expiryDateValue')"></i></button></th>
+                  <th><button type="button" class="sort-header" (click)="sortBy('status')">Status <i [class]="sortIcon('status')"></i></button></th>
+                  <th><button type="button" class="sort-header" (click)="sortBy('trainer')">Assigned Trainer <i [class]="sortIcon('trainer')"></i></button></th>
+                  <th>Actions</th>
+                </tr>
+                <tr class="column-filter-row">
+                  <th>
+                    <div class="column-filter-control">
+                      <input pInputText [(ngModel)]="columnFilters.memberId" (ngModelChange)="onColumnFilterChange()" placeholder="Type to search" />
+                      <button *ngIf="columnFilters.memberId" type="button" class="clear-column-filter" (click)="clearColumnFilter('memberId')" title="Clear filter" aria-label="Clear member ID filter">
+                        <i class="pi pi-times"></i>
+                      </button>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="column-filter-control">
+                      <input pInputText [(ngModel)]="columnFilters.name" (ngModelChange)="onColumnFilterChange()" placeholder="Type to search" />
+                      <button *ngIf="columnFilters.name" type="button" class="clear-column-filter" (click)="clearColumnFilter('name')" title="Clear filter" aria-label="Clear member name filter">
+                        <i class="pi pi-times"></i>
+                      </button>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="column-filter-control select-filter">
+                      <p-select [options]="planOptions.slice(1)" [(ngModel)]="columnFilters.planType" (ngModelChange)="onColumnFilterChange()" placeholder="Any" appendTo="body" [showClear]="true"></p-select>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="column-filter-control date-filter">
+                      <p-datepicker [(ngModel)]="columnDateFilters.joiningDateValue" (ngModelChange)="onColumnFilterChange()" dateFormat="dd-mm-yy" placeholder="Select date" appendTo="body" [showIcon]="false" [showButtonBar]="true"></p-datepicker>
+                      <button *ngIf="columnDateFilters.joiningDateValue" type="button" class="clear-column-filter" (click)="clearColumnDateFilter('joiningDateValue')" title="Clear date filter" aria-label="Clear joining date filter">
+                        <i class="pi pi-times"></i>
+                      </button>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="column-filter-control date-filter">
+                      <p-datepicker [(ngModel)]="columnDateFilters.expiryDateValue" (ngModelChange)="onColumnFilterChange()" dateFormat="dd-mm-yy" placeholder="Select date" appendTo="body" [showIcon]="false" [showButtonBar]="true"></p-datepicker>
+                      <button *ngIf="columnDateFilters.expiryDateValue" type="button" class="clear-column-filter" (click)="clearColumnDateFilter('expiryDateValue')" title="Clear date filter" aria-label="Clear expiry date filter">
+                        <i class="pi pi-times"></i>
+                      </button>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="column-filter-control select-filter">
+                      <p-select [options]="statusOptions.slice(1)" [(ngModel)]="columnFilters.status" (ngModelChange)="onColumnFilterChange()" placeholder="Select One" appendTo="body" [showClear]="true"></p-select>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="column-filter-control select-filter">
+                      <p-select [options]="trainerOptions.slice(1)" [(ngModel)]="columnFilters.trainer" (ngModelChange)="onColumnFilterChange()" placeholder="Any" appendTo="body" [showClear]="true"></p-select>
+                    </div>
+                  </th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let member of pagedMembers; trackBy: trackByMember">
+                  <td>{{ member.memberId }}</td>
+                  <td>
+                    <div class="user-cell">
+                      <button type="button" class="photo-button" (click)="openImagePreview(member)" title="Preview photo">
+                        <img class="member-photo" [src]="member.photo" [alt]="member.name" />
+                      </button>
+                      <a [routerLink]="['/members', member.id]" class="member-name">{{ member.name }}</a>
+                    </div>
+                  </td>
+                  <td>{{ member.planType }}</td>
+                  <td>{{ member.joiningDate }}</td>
+                  <td>{{ member.expiryDate }}</td>
+                  <td>
+                    <span class="status-pill" [ngClass]="member.status.toLowerCase()">
+                      <i class="pi pi-circle-fill"></i>
+                      {{ member.status }}
+                    </span>
+                  </td>
+                  <td>{{ member.trainer }}</td>
+                  <td>
+                    <div class="row-actions">
+                      <a [routerLink]="['/members', member.id]" title="View Member" class="action-link">
+                        <i class="pi pi-eye"></i>
+                      </a>
+                      <button type="button" [routerLink]="['/members/edit', member.id]" title="Edit Member">
+                        <i class="pi pi-pencil"></i>
+                      </button>
+                      <button type="button" class="danger" (click)="deleteMember(member.id)" title="Delete Member">
+                        <i class="pi pi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </ng-container>
+
+          <ng-container *ngIf="viewMode === 'card'">
+            <div class="card-grid">
+              <article class="member-card" *ngFor="let member of pagedMembers; trackBy: trackByMember">
+                <div class="member-card-header">
+                  <button type="button" class="photo-button large" (click)="openImagePreview(member)" title="Preview photo">
+                    <img class="member-photo" [src]="member.photo" [alt]="member.name" />
+                  </button>
+                  <div>
+                    <h3>{{ member.name }}</h3>
+                    <span class="member-id">{{ member.memberId }}</span>
+                  </div>
+                </div>
+                <div class="member-card-body">
+                  <p><strong>Plan:</strong> {{ member.planType }}</p>
+                  <p><strong>Trainer:</strong> {{ member.trainer }}</p>
+                  <p><strong>Joined:</strong> {{ member.joiningDate }}</p>
+                  <p><strong>Expires:</strong> {{ member.expiryDate }}</p>
+                </div>
+                <div class="member-card-footer">
+                  <span class="status-pill" [ngClass]="member.status.toLowerCase()">
+                    <i class="pi pi-circle-fill"></i>
+                    {{ member.status }}
+                  </span>
+                  <div class="row-actions">
+                    <a [routerLink]="['/members', member.id]" title="View Member" class="action-link">
+                      <i class="pi pi-eye"></i>
+                    </a>
+                    <button type="button" [routerLink]="['/members/edit', member.id]" title="Edit Member">
+                      <i class="pi pi-pencil"></i>
+                    </button>
+                    <button type="button" class="danger" (click)="deleteMember(member.id)" title="Delete Member">
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </ng-container>
+
+          <app-empty-state
+            *ngIf="totalMembers === 0"
+            icon="pi pi-users"
+            title="No members found"
+            message="Adjust filters or add a new member to build the directory.">
+          </app-empty-state>
+        </div>
+
+        <footer class="table-footer">
+          <span>Showing {{ showingStart }} to {{ showingEnd }} of {{ totalMembers }}</span>
+          <div class="card flex justify-center pagination-card">
+            <p-paginator (onPageChange)="onPageChange($event)" [first]="first" [rows]="rows"
+              [totalRecords]="totalMembers" [rowsPerPageOptions]="[10, 20, 30]" />
+          </div>
+        </footer>
+      </section>
+
+    </div>
+
+
+  </main>
+
+  <app-profile-image-viewer
+    title="Member Photo"
+    [visible]="!!previewImage"
+    [src]="previewImage?.src || ''"
+    [alt]="previewImage?.alt || ''"
+    (visibleChange)="previewImage = $event ? previewImage : null">
+  </app-profile-image-viewer>
+</div>

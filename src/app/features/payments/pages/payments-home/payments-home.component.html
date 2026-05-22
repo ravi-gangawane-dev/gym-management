@@ -1,0 +1,435 @@
+<div class="payments-screen" [class.history-mode]="isHistoryMode" [class.checkout-mode]="isCheckoutMode">
+    <main class="payments-content">
+        <section class="payments-hero">
+            <div>
+                <span>Payment Management</span>
+                <h2>Payments</h2>
+                <p>Manage checkout, renewals, PT payments, add-ons, invoices, and transaction history.</p>
+            </div>
+            <div class="payments-metrics">
+                <article>
+                    <small>Total Records</small>
+                    <strong>{{ payments.length }}</strong>
+                </article>
+                <article>
+                    <small>Completed</small>
+                    <strong>{{ completedPayments }}</strong>
+                </article>
+                <article>
+                    <small>Pending</small>
+                    <strong>{{ pendingPayments }}</strong>
+                </article>
+                <article>
+                    <small>Revenue</small>
+                    <strong>{{ totalRevenue | currency:'INR':'symbol':'1.2-2':'en-IN' }}</strong>
+                </article>
+                <article>
+                    <small>Failed</small>
+                    <strong>{{ failedPayments }}</strong>
+                </article>
+            </div>
+        </section>
+
+        <section class="flow-tabs" *ngIf="isCheckoutMode">
+            <button type="button" [class.active]="selectedFlow === 'new'" (click)="selectFlow('new')">
+                <i class="pi pi-id-card"></i>
+                <span>New Membership</span>
+            </button>
+            <button type="button" [class.active]="selectedFlow === 'renew'" (click)="selectFlow('renew')">
+                <i class="pi pi-refresh"></i>
+                <span>Renew Membership</span>
+            </button>
+            <button type="button" [class.active]="selectedFlow === 'pt'" (click)="selectFlow('pt')">
+                <i class="pi pi-user"></i>
+                <span>PT Payment</span>
+            </button>
+            <button type="button" [class.active]="selectedFlow === 'addons'" (click)="selectFlow('addons')">
+                <i class="pi pi-plus-circle"></i>
+                <span>Add-on Services</span>
+            </button>
+        </section>
+
+        <div class="payments-layout" *ngIf="isCheckoutMode">
+            <section class="checkout-panel">
+                <div class="table-toolbar">
+                    <div>
+                        <h3>{{ editingPayment ? 'Edit Payment' : 'Checkout' }}</h3>
+                        <span>{{ paymentForm.invoiceId }}</span>
+                    </div>
+                    <div class="checkout-actions">
+                        <button pButton type="button" label="Back to History" icon="pi pi-arrow-left" class="secondary back-history-button"
+                            (click)="goToPaymentHistory()"></button>
+                        <div class="member-pill">
+                            <i class="pi pi-user"></i>
+                            <span>{{ paymentForm.member || (isServiceCheckout ? 'Walk-in Customer' : 'No member selected') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checkout-grid">
+                    <section class="form-panel">
+                        <h3>{{ isServiceCheckout ? 'Customer Details' : 'Member Details' }}</h3>
+                        <div class="form-grid">
+                            <label class="field">
+                                <span>{{ isServiceCheckout ? 'Select Member (Optional)' : 'Select Member' }}</span>
+                                <p-select [options]="memberOptions" [(ngModel)]="paymentForm.memberId"
+                                    optionLabel="label" optionValue="value" [filter]="true" appendTo="body"
+                                    placeholder="Search member" (onChange)="onMemberChange($event)">
+                                </p-select>
+                            </label>
+
+                            <label class="field" *ngIf="isServiceCheckout">
+                                <span>Customer Name</span>
+                                <input type="text" pInputText [(ngModel)]="paymentForm.member" placeholder="Walk-in customer name" />
+                            </label>
+
+                            <label class="field" *ngIf="!isServiceCheckout">
+                                <span>Membership ID</span>
+                                <input type="text" pInputText [(ngModel)]="paymentForm.membershipId" />
+                            </label>
+
+                            <label class="field full-width" *ngIf="!isServiceCheckout">
+                                <span>Selected Plan</span>
+                                <input type="text" pInputText [(ngModel)]="paymentForm.plan" readonly />
+                            </label>
+
+                            <label class="field" *ngIf="!isServiceCheckout">
+                                <span>Expiry Date</span>
+                                <input type="text" pInputText [(ngModel)]="paymentForm.expiryDate" />
+                            </label>
+
+                            <label class="field" *ngIf="!isServiceCheckout">
+                                <span>Auto Renewal</span>
+                                <span class="toggle-row">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" [(ngModel)]="autoRenew" />
+                                        <span class="slider"></span>
+                                    </label>
+                                    <strong>{{ autoRenew ? 'Enabled' : 'Disabled' }}</strong>
+                                </span>
+                            </label>
+                        </div>
+                    </section>
+
+                    <section class="form-panel" *ngIf="canShowCheckoutSections">
+                        <h3>Payment Method</h3>
+                        <div class="method-grid">
+                            <label *ngFor="let method of paymentMethods" class="method-option"
+                                [class.selected]="paymentForm.method === method.id">
+                                <input type="radio" name="paymentMethod" [value]="method.id"
+                                    [(ngModel)]="paymentForm.method" (change)="updateTotals()" />
+                                <span>
+                                    <strong>{{ method.label }}</strong>
+                                    <small>{{ method.description }}</small>
+                                </span>
+                            </label>
+                        </div>
+                    </section>
+
+                    <section class="form-panel" *ngIf="canShowCheckoutSections">
+                        <h3>Discounts & Offers</h3>
+                        <div class="discount-row">
+                            <input type="text" pInputText [(ngModel)]="paymentForm.couponCode"
+                                placeholder="Enter promo code" />
+                            <button pButton type="button" label="Apply" class="secondary"
+                                (click)="applyCoupon()"></button>
+                        </div>
+                        <div class="summary-list">
+                            <div>
+                                <span>Coupon</span>
+                                <strong>{{ paymentForm.couponCode || 'None' }}</strong>
+                            </div>
+                            <div>
+                                <span>Discount</span>
+                                <strong>{{ discountValue | currency:'INR':'symbol':'1.2-2':'en-IN' }}</strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="form-panel invoice-panel" *ngIf="canShowCheckoutSections">
+                        <h3>Invoice Summary</h3>
+                        <div class="invoice-row" *ngIf="!isServiceCheckout">
+                            <span>Membership Fee</span>
+                            <strong>{{ membershipFee | currency:'INR':'symbol':'1.2-2':'en-IN' }}</strong>
+                        </div>
+                        <div class="invoice-row">
+                            <span>Add-ons</span>
+                            <strong>{{ addonsTotal | currency:'INR':'symbol':'1.2-2':'en-IN' }}</strong>
+                        </div>
+                        <div class="invoice-row">
+                            <span>Discount</span>
+                            <strong>- {{ discountValue | currency:'INR':'symbol':'1.2-2':'en-IN' }}</strong>
+                        </div>
+                        <div class="invoice-row">
+                            <span>GST</span>
+                            <strong>{{ gstValue | currency:'INR':'symbol':'1.2-2':'en-IN' }}</strong>
+                        </div>
+                        <div class="invoice-row">
+                            <span>Paid Amount</span>
+                            <p-inputNumber [(ngModel)]="paymentForm.paidAmount" mode="currency" currency="INR"
+                                locale="en-IN" [min]="0" [max]="totalAmount" (onInput)="onPaidAmountChange()">
+                            </p-inputNumber>
+                        </div>
+                        <div class="invoice-row">
+                            <span>Pending Amount</span>
+                            <strong>{{ (paymentForm.pendingAmount || 0) | currency:'INR':'symbol':'1.2-2':'en-IN'
+                                }}</strong>
+                        </div>
+                        <div class="invoice-total">
+                            <span>Total Amount</span>
+                            <strong>{{ totalAmount | currency:'INR':'symbol':'1.2-2':'en-IN' }}</strong>
+                        </div>
+                        <div class="emi-panel" *ngIf="paymentForm.method === 'EMI' && emiAvailable">
+                            <h4>{{ selectedPlanMonths }} Month EMI Schedule</h4>
+                            <div class="emi-row" *ngFor="let emi of paymentForm.emiSchedule">
+                                <span>EMI {{ emi.installment }} · {{ emi.dueDate | date:'dd MMM yyyy' }}</span>
+                                <strong>{{ emi.amount | currency:'INR':'symbol':'1.2-2':'en-IN' }}</strong>
+                                <em [class.paid]="emi.paid">{{ emi.paid ? 'Paid' : 'Pending' }}</em>
+                            </div>
+                        </div>
+                        <div class="payment-actions">
+                            <button pButton type="button" label="Proceed To Payment" icon="pi pi-check"
+                                (click)="processPayment()"></button>
+                            <button pButton type="button" label="Save as Draft" icon="pi pi-save" class="secondary"
+                                [disabled]="!hasPendingAmount" (click)="saveDraft()"></button>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <aside class="filter-panel">
+                <h2>{{ selectedFlow === 'addons' ? 'Service Selection' : 'Plan Selection' }}</h2>
+                <div class="plan-list" *ngIf="selectedFlow !== 'addons'">
+                    <article *ngFor="let plan of planTemplates" class="plan-option"
+                        [class.selected]="paymentForm.plan === plan.name" (click)="selectPlan(plan)">
+                        <div>
+                            <strong>{{ plan.name }}</strong>
+                            <span>{{ plan.label }}</span>
+                        </div>
+                        <small>{{ plan.price | currency:'INR':'symbol':'1.2-2':'en-IN' }}</small>
+                    </article>
+                </div>
+
+                <div class="panel-section" *ngIf="selectedFlow === 'renew'">
+                    <h3>Renew Options</h3>
+                    <label *ngFor="let option of renewOptions" class="choice-row">
+                        <input type="radio" name="renewPlan" [value]="option.name" [(ngModel)]="renewSelection"
+                            (change)="applyRenewOption(option)" />
+                        <span>{{ option.name }}</span>
+                        <strong>{{ option.price | currency:'INR':'symbol':'1.2-2':'en-IN' }}</strong>
+                    </label>
+                </div>
+
+                <div class="panel-section" *ngIf="selectedFlow === 'pt'">
+                    <h3>Personal Training</h3>
+                    <label *ngFor="let pt of ptOptions" class="choice-row stacked">
+                        <input type="radio" name="ptOption" [value]="pt.name" [(ngModel)]="selectedPtOption"
+                            (change)="applyPtOption(pt)" />
+                        <span>
+                            <strong>{{ pt.name }}</strong>
+                            <small>{{ pt.description }}</small>
+                        </span>
+                        <strong>{{ pt.price | currency:'INR':'symbol':'1.2-2':'en-IN' }}</strong>
+                    </label>
+                </div>
+
+                <div class="panel-section" *ngIf="selectedFlow === 'addons'">
+                    <h3>Add-on Services</h3>
+                    <label *ngFor="let addon of addonsOptions" class="choice-row">
+                        <input type="checkbox" [(ngModel)]="addon.selected" (change)="updateTotals()" />
+                        <span>{{ addon.label }}</span>
+                        <strong>{{ addon.amount | currency:'INR':'symbol':'1.2-2':'en-IN' }}</strong>
+                    </label>
+                    <div class="custom-addon-row">
+                        <input type="text" pInputText [(ngModel)]="customAddon.label" placeholder="Other service name" />
+                        <p-inputNumber [(ngModel)]="customAddon.amount" mode="currency" currency="INR"
+                            locale="en-IN" [min]="0" placeholder="Amount"></p-inputNumber>
+                        <button pButton type="button" label="Add" icon="pi pi-plus" class="secondary"
+                            (click)="addCustomAddon()"></button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <section class="history-panel" *ngIf="isHistoryMode">
+            <app-table-toolbar title="Payment History"
+                [subtitle]="filteredPayments.length + ' of ' + payments.length + ' records'">
+                <app-search-bar [value]="searchTerm" placeholder="Search payments" (valueChange)="setSearch($event)">
+                </app-search-bar>
+                <app-date-range-selector [value]="dateRange" (valueChange)="setDateRange($event)">
+                </app-date-range-selector>
+                <button pButton type="button" label="Add Payment" icon="pi pi-plus" (click)="goToAddPayment()"></button>
+                <button pButton type="button" label="Export" icon="pi pi-download" class="secondary"
+                    (click)="exportPayments()"></button>
+            </app-table-toolbar>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th><button type="button" class="sort-header" (click)="sortBy('member')">Member <i
+                                        [class]="sortIcon('member')"></i></button></th>
+                            <th><button type="button" class="sort-header" (click)="sortBy('membershipId')">Membership ID
+                                    <i [class]="sortIcon('membershipId')"></i></button></th>
+                            <th><button type="button" class="sort-header" (click)="sortBy('plan')">Plan / Add-on Services <i
+                                        [class]="sortIcon('plan')"></i></button></th>
+                            <th><button type="button" class="sort-header" (click)="sortBy('totalAmount')">Total <i
+                                        [class]="sortIcon('totalAmount')"></i></button></th>
+                            <th><button type="button" class="sort-header" (click)="sortBy('paidAmount')">Paid <i
+                                        [class]="sortIcon('paidAmount')"></i></button></th>
+                            <th><button type="button" class="sort-header" (click)="sortBy('pendingAmount')">Pending <i
+                                        [class]="sortIcon('pendingAmount')"></i></button></th>
+                            <th><button type="button" class="sort-header" (click)="sortBy('method')">Method <i
+                                        [class]="sortIcon('method')"></i></button></th>
+                            <th><button type="button" class="sort-header" (click)="sortBy('status')">Status <i
+                                        [class]="sortIcon('status')"></i></button></th>
+                            <th><button type="button" class="sort-header" (click)="sortBy('paidAt')">Paid On <i
+                                        [class]="sortIcon('paidAt')"></i></button></th>
+                            <th>Actions</th>
+                        </tr>
+                        <tr class="column-filter-row">
+                            <th>
+                                <div class="column-filter-control">
+                                    <input pInputText [(ngModel)]="columnFilters.member"
+                                        (ngModelChange)="onColumnFilterChange()" placeholder="Type to search" />
+                                    <button *ngIf="columnFilters.member" type="button" class="clear-column-filter"
+                                        (click)="clearColumnFilter('member')" title="Clear filter"
+                                        aria-label="Clear member filter">
+                                        <i class="pi pi-times"></i>
+                                    </button>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="column-filter-control">
+                                    <input pInputText [(ngModel)]="columnFilters.membershipId"
+                                        (ngModelChange)="onColumnFilterChange()" placeholder="Type to search" />
+                                    <button *ngIf="columnFilters.membershipId" type="button" class="clear-column-filter"
+                                        (click)="clearColumnFilter('membershipId')" title="Clear filter"
+                                        aria-label="Clear membership ID filter">
+                                        <i class="pi pi-times"></i>
+                                    </button>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="column-filter-control select-filter">
+                                    <p-select [options]="paymentPlanOptions" [(ngModel)]="columnFilters.plan"
+                                        (ngModelChange)="onColumnFilterChange()" placeholder="Any" appendTo="body"
+                                        [showClear]="true"></p-select>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="column-filter-control number-filter">
+                                    <p-inputNumber [(ngModel)]="columnAmountFilters.totalAmount"
+                                        (ngModelChange)="onColumnFilterChange()" [min]="0"
+                                        placeholder="Min"></p-inputNumber>
+                                    <button *ngIf="columnAmountFilters.totalAmount" type="button"
+                                        class="clear-column-filter" (click)="clearColumnAmountFilter('totalAmount')"
+                                        title="Clear filter" aria-label="Clear total amount filter">
+                                        <i class="pi pi-times"></i>
+                                    </button>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="column-filter-control number-filter">
+                                    <p-inputNumber [(ngModel)]="columnAmountFilters.paidAmount"
+                                        (ngModelChange)="onColumnFilterChange()" [min]="0"
+                                        placeholder="Min"></p-inputNumber>
+                                    <button *ngIf="columnAmountFilters.paidAmount" type="button"
+                                        class="clear-column-filter" (click)="clearColumnAmountFilter('paidAmount')"
+                                        title="Clear filter" aria-label="Clear paid amount filter">
+                                        <i class="pi pi-times"></i>
+                                    </button>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="column-filter-control number-filter">
+                                    <p-inputNumber [(ngModel)]="columnAmountFilters.pendingAmount"
+                                        (ngModelChange)="onColumnFilterChange()" [min]="0"
+                                        placeholder="Min"></p-inputNumber>
+                                    <button *ngIf="columnAmountFilters.pendingAmount" type="button"
+                                        class="clear-column-filter" (click)="clearColumnAmountFilter('pendingAmount')"
+                                        title="Clear filter" aria-label="Clear pending amount filter">
+                                        <i class="pi pi-times"></i>
+                                    </button>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="column-filter-control select-filter">
+                                    <p-select [options]="paymentMethods" optionLabel="label" optionValue="id"
+                                        [(ngModel)]="columnFilters.method" (ngModelChange)="onColumnFilterChange()"
+                                        placeholder="Any" appendTo="body" [showClear]="true"></p-select>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="column-filter-control select-filter">
+                                    <p-select [options]="['Completed', 'Pending', 'Failed']"
+                                        [(ngModel)]="columnFilters.status" (ngModelChange)="onColumnFilterChange()"
+                                        placeholder="Select One" appendTo="body" [showClear]="true"></p-select>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="column-filter-control date-filter">
+                                    <p-datepicker [(ngModel)]="columnDateFilter"
+                                        (ngModelChange)="onColumnFilterChange()" dateFormat="dd-mm-yy"
+                                        placeholder="Select date" appendTo="body" [showIcon]="false"
+                                        [showButtonBar]="true"></p-datepicker>
+                                    <button *ngIf="columnDateFilter" type="button" class="clear-column-filter"
+                                        (click)="clearColumnDateFilter()" title="Clear date filter"
+                                        aria-label="Clear paid date filter">
+                                        <i class="pi pi-times"></i>
+                                    </button>
+                                </div>
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let payment of pagedPayments">
+                            <td>{{ payment.member }}</td>
+                            <td>{{ payment.membershipId }}</td>
+                            <td>{{ getPaymentEntryName(payment) }}</td>
+                            <td>{{ (payment.totalAmount ?? payment.amount) | currency:'INR':'symbol':'1.2-2':'en-IN' }}
+                            </td>
+                            <td>{{ (payment.paidAmount ?? payment.amount) | currency:'INR':'symbol':'1.2-2':'en-IN' }}
+                            </td>
+                            <td>{{ (payment.pendingAmount || 0) | currency:'INR':'symbol':'1.2-2':'en-IN' }}</td>
+                            <td>{{ payment.method }}</td>
+                            <td>
+                                <span class="status-pill" [ngClass]="payment.status.toLowerCase()">
+                                    <i class="pi pi-circle-fill"></i>
+                                    {{ payment.status }}
+                                </span>
+                            </td>
+                            <td>{{ payment.paidAt | date: 'dd MMM yyyy' }}</td>
+                            <td>
+                                <div class="row-actions">
+                                    <button type="button" title="Edit Payment" (click)="editPayment(payment)">
+                                        <i class="pi pi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="danger" title="Delete Payment"
+                                        (click)="confirmDelete(payment)">
+                                        <i class="pi pi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr *ngIf="payments.length === 0">
+                            <td colspan="10" class="empty-state">No payments have been recorded yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <app-empty-state *ngIf="payments.length > 0 && filteredPayments.length === 0" icon="pi pi-wallet"
+                    title="No payments match" message="Clear filters or choose a wider date range.">
+                </app-empty-state>
+            </div>
+            <footer class="table-footer">
+                <span>Showing {{ showingStart }} to {{ showingEnd }} of {{ filteredPayments.length }}</span>
+                <div class="card flex justify-center pagination-card">
+                    <p-paginator (onPageChange)="onPageChange($event)" [first]="first" [rows]="rows"
+                        [totalRecords]="filteredPayments.length" [rowsPerPageOptions]="[10, 20, 30, 50]">
+                    </p-paginator>
+                </div>
+            </footer>
+        </section>
+    </main>
+</div>

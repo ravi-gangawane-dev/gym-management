@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build -- --configuration production",
+  "outputDirectory": "dist/gym-management/browser",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
+}
